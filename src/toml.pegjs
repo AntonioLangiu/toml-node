@@ -18,6 +18,11 @@
     return obj;
   }
 
+  var comment = 0;
+  function addComment(value, line, column) {
+     addNode(node('Assign', value, line, column, 'comment'+comment++));
+  }
+
   function convertCodePoint(str, line, col) {
     var num = parseInt("0x" + str);
 
@@ -77,7 +82,11 @@ expression
   = comment / path / tablearray / assignment
 
 comment
-  = '#' (!(NL / EOF) .)*
+  = '#' name:comment_text                   { addComment(name, line, column)}
+
+comment_text
+  = chars:(!(NL / EOF) .)*                  { return node('String', chars.map(
+                    function(value, index) { return value[1]}).join(''), line, column) }
 
 path
   = '[' S* name:table_key S* ']'              { addNode(node('ObjectPath', name, line, column)) }
